@@ -1,0 +1,9 @@
+services:
+  swish:
+    image: swipl/swish:latest
+    container_name: covil-do-lich-swish
+    ports:
+      - "3080:3050"
+    volumes:
+      - ./prolog/covil_do_lich.pl:/swish/examples/covil_do_lich.pl:ro
+    restart: unless-stopped
