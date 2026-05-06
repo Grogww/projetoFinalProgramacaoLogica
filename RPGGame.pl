@@ -4,21 +4,45 @@
 % ============================================================
 
 % --- MAPA: conexões entre salas ---
-% conecta(Origem, Destino) — caminho unidirecional
+% conecta(Origem, Destino) — caminho unidirecional (Parecido com a logica de grafos)
 
 conecta(entrada, ossario).
+conecta(ossario, entrada).
+
 conecta(entrada, cripta_esquecida).
-conecta(cripta_esquecida, ossario).
+conecta(cripta_esquecida, entrada).
+
 conecta(ossario, cripta_esquecida).
-conecta(ossario, sala_armadilha).
+conecta(cripta_esquecida, ossario).
+
+conecta(sala_armadilha, cripta_esquecida).
+conecta(cripta_esquecida, sala_armadilha).
+
+conecta(passagem_secreta, ossario).
 conecta(ossario, passagem_secreta).
-conecta(sala_armadilha, passagem_secreta).
+
 conecta(passagem_secreta, sala_armadilha).
+conecta(sala_armadilha, passagem_secreta).
+
 conecta(passagem_secreta, catacumba).
-conecta(passagem_secreta, sala_ritual).
+conecta(catacumba, passagem_secreta).
+
+conecta(passagem_secreta, camara_alquimia).
+conecta(camara_alquimia, passagem_secreta).
+
 conecta(catacumba, camara_alquimia).
+conecta(camara_alquimia, catacumba).
+
+conecta(sala_armadilha, sala_ritual).
+conecta(sala_ritual, sala_armadilha).
+
+conecta(corredor_final, sala_ritual).
 conecta(sala_ritual, corredor_final).
+
+conecta(corredor_final, camara_alquimia).
 conecta(camara_alquimia, corredor_final).
+
+% Corredor final → sala boss: sem volta (portão sela atrás do jogador)
 conecta(corredor_final, sala_boss).
 
 % --- JOGADOR: estado inicial ---
