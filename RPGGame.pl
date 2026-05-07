@@ -228,7 +228,7 @@ pode_derrotar(Jogador, Monstro, Inventario) :-
 
 % sala_segura/3 - a sala não tem monstro, OU o jogador pode derrotá-lo
 
-sala_segura(Jogador, Sala, Inventario) :-
+sala_segura(_Jogador, Sala, _Inventario) :-
     \+ monstro(_, Sala, _, _).
 
 sala_segura(Jogador, Sala, Inventario) :-
@@ -237,7 +237,7 @@ sala_segura(Jogador, Sala, Inventario) :-
 
 % sobrevive_armadilha/3 - vida efetiva > dano da armadilha
 
-sobrevive_armadilha(Jogador, Sala, Inventario) :-
+sobrevive_armadilha(_Jogador, Sala, _Inventario) :-
     \+ armadilha(Sala, _, _).
 
 sobrevive_armadilha(Jogador, Sala, Inventario) :-
