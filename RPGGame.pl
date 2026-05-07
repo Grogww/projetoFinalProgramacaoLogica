@@ -1,10 +1,10 @@
 % ============================================================
-%  COVIL DO LICH — RPG Baseado em Regras (Prolog)
-%  Trabalho Final — Programação Lógica
+%  COVIL DO LICH - RPG Baseado em Regras (Prolog)
+%  Trabalho Final - Programação Lógica
 % ============================================================
 
 % --- MAPA: conexões entre salas ---
-% conecta(Origem, Destino) — caminho unidirecional (Parecido com a logica de grafos)
+% conecta(Origem, Destino) - caminho unidirecional (Parecido com a logica de grafos)
 
 conecta(entrada, ossario).
 conecta(ossario, entrada).
@@ -120,7 +120,7 @@ descricao_sala(sala_boss,
 %  REGRAS DE MOVIMENTAÇÃO
 % ============================================================
 
-% pode_mover/2 — movimento direto (1 passo)
+% pode_mover/2 - movimento direto (1 passo)
 % O jogador pode mover se existe conexão da sala atual ao destino.
 
 pode_mover(Jogador, Destino) :-
@@ -128,7 +128,7 @@ pode_mover(Jogador, Destino) :-
     conecta(SalaAtual, Destino).
 
 
-% caminho/2 — alcançabilidade (N passos)
+% caminho/2 - alcançabilidade (N passos)
 % Verifica se existe ALGUMA sequência de conexões de X até Y.
 % Usa lista de visitados para evitar loops infinitos.
 
@@ -143,7 +143,7 @@ caminho(Origem, Destino, Visitados) :-
     caminho(Intermediario, Destino, [Intermediario | Visitados]).
 
 
-% rota/3 — encontra o caminho completo como lista de salas
+% rota/3 - encontra o caminho completo como lista de salas
 
 rota(Origem, Destino, Caminho) :-
     rota(Origem, Destino, [Origem], CaminhoRev),
@@ -157,13 +157,18 @@ rota(Origem, Destino, Visitados, Caminho) :-
     rota(Prox, Destino, [Prox | Visitados], Caminho).
 
 
+% todas_rotas/3 - coleta TODAS as rotas possíveis entre duas salas
+% Usa findall para forçar o Prolog a esgotar o backtracking de rota/3
+
+todas_rotas(Origem, Destino, Rotas) :-
+    findall(R, rota(Origem, Destino, R), Rotas).
 
 
 % ============================================================
 %  REGRAS DE INVENTÁRIO
 % ============================================================
 
-% melhor_arma/2 — encontra o maior bônus de arma no inventário
+% melhor_arma/2 - encontra o maior bônus de arma no inventário
 % Se não tem arma, bônus é 0.
 
 melhor_arma(Inventario, Bonus) :-
@@ -175,21 +180,21 @@ melhor_arma(Inventario, 0) :-
     \+ (member(Item, Inventario), item(Item, _, arma, _, _)).
 
 
-% bonus_defesa/2 — soma TODOS os itens de defesa (escudo + amuleto acumulam)
+% bonus_defesa/2 - soma TODOS os itens de defesa (escudo + amuleto acumulam)
 
 bonus_defesa(Inventario, Total) :-
     findall(V, (member(Item, Inventario), item(Item, _, defesa, V, _)), Defesas),
     sum_list(Defesas, Total).
 
 
-% cura_total/2 — soma todas as poções disponíveis
+% cura_total/2 - soma todas as poções disponíveis
 
 cura_total(Inventario, Total) :-
     findall(V, (member(Item, Inventario), item(Item, _, cura, V, _)), Curas),
     sum_list(Curas, Total).
 
 
-% poder_total/3 — calcula o poder de combate do jogador
+% poder_total/3 - calcula o poder de combate do jogador
 % Poder = ForcaBase + MelhorArma + BonusDefesa
 
 poder_total(Jogador, Inventario, Poder) :-
@@ -198,14 +203,14 @@ poder_total(Jogador, Inventario, Poder) :-
     bonus_defesa(Inventario, BonusDefesa),
     Poder is ForcaBase + BonusArma + BonusDefesa.
 
-% vida_total/3 — vida efetiva considerando curas e dano de armadilhas
+% vida_total/3 - vida efetiva considerando curas e dano de armadilhas
 
 vida_efetiva(Jogador, Inventario, VidaFinal) :-
     jogador(Jogador, _, VidaBase, _),
     cura_total(Inventario, Cura),
     VidaFinal is VidaBase + Cura.
 
-% tem_chave/1 — verifica se o jogador possui a chave da cripta
+% tem_chave/1 - verifica se o jogador possui a chave da cripta
 tem_chave(Inventario) :-
     member(chave_cripta, Inventario).
 
@@ -214,14 +219,14 @@ tem_chave(Inventario) :-
 %  REGRAS DE COMBATE
 % ============================================================
 
-% pode_derrotar/3 — o jogador vence se seu poder >= força do monstro
+% pode_derrotar/3 - o jogador vence se seu poder >= força do monstro
 
 pode_derrotar(Jogador, Monstro, Inventario) :-
     monstro(Monstro, _, ForcaMonstro, _),
     poder_total(Jogador, Inventario, PoderJogador),
     PoderJogador >= ForcaMonstro.
 
-% sala_segura/3 — a sala não tem monstro, OU o jogador pode derrotá-lo
+% sala_segura/3 - a sala não tem monstro, OU o jogador pode derrotá-lo
 
 sala_segura(Jogador, Sala, Inventario) :-
     \+ monstro(_, Sala, _, _).
@@ -230,7 +235,7 @@ sala_segura(Jogador, Sala, Inventario) :-
     monstro(Monstro, Sala, _, _),
     pode_derrotar(Jogador, Monstro, Inventario).
 
-% sobrevive_armadilha/3 — vida efetiva > dano da armadilha
+% sobrevive_armadilha/3 - vida efetiva > dano da armadilha
 
 sobrevive_armadilha(Jogador, Sala, Inventario) :-
     \+ armadilha(Sala, _, _).
@@ -240,26 +245,43 @@ sobrevive_armadilha(Jogador, Sala, Inventario) :-
     vida_efetiva(Jogador, Inventario, Vida),
     Vida > Dano.
 
-% sala_acessivel/3 — sala é segura E sobrevive à armadilha (se houver)
+% sala_acessivel/3 - sala é segura E sobrevive à armadilha (se houver)
 
 sala_acessivel(Jogador, Sala, Inventario) :-
     sala_segura(Jogador, Sala, Inventario),
     sobrevive_armadilha(Jogador, Sala, Inventario).
 
 
-% pode_acessar_corredor_final/2 — precisa da chave E sala_ritual limpa
+% pode_acessar_corredor_final/2 - precisa da chave E sala_ritual limpa
 
 pode_acessar_corredor_final(Jogador, Inventario) :-
     tem_chave(Inventario),
     sala_segura(Jogador, sala_ritual, Inventario).
 
 
+% monstros_derrotaveis/2 - lista todos os monstros que o jogador
+% consegue derrotar com um dado inventário.
+% Reutiliza pode_derrotar/3 que já calcula poder_total internamente.
+
+monstros_derrotaveis(Inventario, Monstros) :-
+    findall(M, pode_derrotar(heroi, M, Inventario), Monstros).
+
+
+% salas_seguras/2 - lista todas as salas que o jogador pode
+% atravessar com segurança (sem monstro OU monstro derrotável,
+% E sobrevive à armadilha se houver).
+% Itera sobre todas as salas conhecidas via descricao_sala/2.
+
+salas_seguras(Inventario, Salas) :-
+    findall(S,
+        (descricao_sala(S, _), sala_acessivel(heroi, S, Inventario)),
+        Salas).
 
 % ============================================================
 %  CONDIÇÕES DE VITÓRIA
 % ============================================================
 
-% vencedor/2 — o jogador vence o jogo se:
+% vencedor/2 - o jogador vence o jogo se:
 %   1. Pode acessar o corredor final (tem chave + derrotou espectro)
 %   2. Pode derrotar o boss (cavaleiro_da_morte)
 %   3. Sobrevive a todas as armadilhas no caminho
@@ -269,7 +291,7 @@ vencedor(Jogador, Inventario) :-
     pode_derrotar(Jogador, cavaleiro_da_morte, Inventario),
     sobrevive_armadilha(Jogador, sala_armadilha, Inventario).
 
-% inventario_minimo_vitoria/1 — qual é o menor inventário que garante vitória?
+% inventario_minimo_vitoria/1 - qual é o menor inventário que garante vitória?
 % Usa backtracking para testar combinações.
 
 inventario_possivel([pocao_menor, adaga_enferrujada, escudo_osseo,
@@ -285,7 +307,7 @@ inventario_minimo_vitoria(Inventario) :-
         Menor \= [],
         vencedor(heroi, Menor)).
 
-% subconjunto/2 — gera subconjuntos via backtracking
+% subconjunto/2 - gera subconjuntos via backtracking
 subconjunto([], _).
 subconjunto([X|Resto], Lista) :-
     member(X, Lista),
